@@ -1,0 +1,259 @@
+Function læserfryser2() 'skal tage populnr som input
+Dim frysere()
+Dim i As Long
+ReDim Preserve frysere(x)
+Do While Cells(i + 2, 3).Value <> "" 'så længe fryserpos ikke er tom
+
+    'ReDim Preserve frysere(x)
+    
+    If UBound(frysere) = 0 Then
+        ReDim Preserve frysere(x)
+        frysere(x) = Cells(2 + i, 3).Value
+        
+        x = x + 1
+    Else
+        If Not frysere(x - 1) = Cells(2 + i, 3).Value Then
+            ReDim Preserve frysere(x)
+        
+            frysere(x) = Cells(2 + i, 3).Value
+            x = x + 1
+            
+            
+        End If
+    End If
+
+    i = i + 1
+
+Loop
+
+læserfryser2 = frysere 'crasher?
+
+
+
+End Function
+Function infoomfryser(frysernr)
+Dim infoarray()
+Dim info(7)
+
+
+Do While Cells(i + 2, 3).Value <> "" 'uendeligt loop
+    
+    
+    If Cells(i + 2, 3) = frysernr Then
+    ReDim Preserve infoarray(y)
+    
+    For x = 0 To 7
+        info(x) = Cells(i + 2, x + 1).Value
+    Next x
+    
+    infoarray(y) = (info())
+    y = y + 1
+    
+    End If
+
+i = i + 1
+Loop
+
+infoomfryser = infoarray()
+
+End Function
+Sub skriverfryseroversigtom2()
+Dim info()
+Dim tempsize()
+Dim tempvar()
+
+'test giver alle de forskellige frysere som output
+frysernumre = læserfryser2()
+
+
+
+'infoomfryser giver et 2-dimensionelt array som output hvor infoomfryser(x) = antallet af rækker med fryserinfo og infoomfryser(x)(y) er informationen om hver celle i række(x)
+For x = LBound(frysernumre) To UBound(frysernumre)
+ReDim Preserve info(x)
+info(x) = infoomfryser(frysernumre(x))
+Next x
+'sletter lige data (for debug)
+Range("L1:O86").Value = "" 'Debug
+
+
+'skriver overskrifter ind.
+Cells(1, 12).Value = "Fryserpos"
+Cells(1, 13).Value = "Ledige pl."
+Cells(1, 14).Value = "Stik nr."
+Cells(1, 15).Value = "Fryserindhold     Fryseroversigt - " & Date
+
+
+i = 0
+side = 0 'initierer i (bruges til at lave mellemrum mellem sider
+'taster data ind i samme opsætning som bioanalytikerne er vant til
+tegn = TegnerStreger("L", 1, "O", 33)
+For x = LBound(info) + 1 To UBound(info) 'looper igennem alle frysernumre
+
+
+Cells(x + 1 + i, 10).Value = x
+Cells(x + 1 + i, 12).Value = info(x)(0)(3)
+Cells(x + 1 + i, 13).Value = info(x)(0)(7)
+Cells(x + 1 + i, 14).Value = frysernumre(x)
+    
+
+    
+    For y = LBound(info(x)) To UBound(info(x))
+    
+    
+    'if else, hvis maxplateID > 0 indtast min og mix, ellers bare det som det er nu
+        If info(x)(y)(5) > 0 Then
+            'for at løse problemet med at string bliver for lang kan jeg evt hvis string bliver for lang sige + var eller splitte den
+            Cells(x + 1 + i, 15).Value = Cells(x + 1 + i, 15).Value & " " & info(x)(y)(0) & ": " & info(x)(y)(6) & " " & info(x)(y)(4) & "-" & info(x)(y)(5) & ","
+        Else
+            Cells(x + 1 + i, 15).Value = Cells(x + 1 + i, 15).Value & " " & info(x)(y)(0) & ": " & info(x)(y)(6) & ","
+        End If
+        
+    z = y
+    Next y
+    
+    For y = 0 To z
+        myrange = "O" & x + 1 + i '+i
+        Range(myrange).Characters(InStr(1, Range(myrange), info(x)(y)(0), vbTextCompare), Len(info(x)(y)(0))).Font.Bold = True
+    Next y
+
+    If x Mod 32 = 0 Then
+    
+        If side = 0 Then
+        tegn = TegnerStreger("L", 1, "O", 33)
+        End If
+
+
+       
+        'Tegner streger
+        'L1*side:P34*side
+
+        
+        side = side + 2
+        i = 0 + side
+                
+        Cells(x + 1 + i, 10).Value = x
+        Cells(x + side + 1, 12).Value = "Fryserpos" '14
+        
+        Cells(x + side + 1, 13).Value = "Ledige pl."
+        Cells(x + side + 1, 14).Value = "Stik nr."
+        Cells(x + side + 1, 15).Value = "Fryserindhold     Fryseroversigt - " & Date
+        tegn = TegnerStreger("L", x + side + 1, "O", x + 33 + side)
+    'indsæt nye overskrifter
+    End If
+'i = i + 1
+Next x
+
+'mangler at gøre overskrifter fed skrift sammt at ændre skriftstørrelse
+
+
+
+
+End Sub
+
+Function TegnerStreger(rangestartbogstav, rangestarttal, rangeslutbogstav, rangesluttal)
+
+gitter = rangestartbogstav & rangestarttal & ":" & rangeslutbogstav & rangesluttal
+førsterække = rangestartbogstav & rangestarttal & ":" & rangeslutbogstav & rangestarttal
+'ramme = rangestartbogstav & rangestarttal & ":" & rangeslutbogstav & rangesluttal
+
+
+    With Range(gitter).Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Range(gitter).Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Range(gitter).Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Range(gitter).Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Range(gitter).Borders(xlInsideVertical)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Range(gitter).Borders(xlInsideHorizontal)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    
+    'gør første række fed
+        With Range(førsterække).Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Range(førsterække).Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Range(førsterække).Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Range(førsterække).Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+
+    
+    'ramme
+    
+    
+    With Range(gitter).Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Range(gitter).Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Range(gitter).Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+    With Range(gitter).Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlMedium
+    End With
+
+    
+    
+    
+    'og yderste kant fede
+    
+    
+    
+End Function
