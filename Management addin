@@ -1211,7 +1211,12 @@ For x = LBound(fryserogmaxplate) To UBound(fryserogmaxplate)
 'ellers skal der stå "elevatorID findes ikke i fryseroversigt"
         'MsgBox (indhold(x))
         'MsgBox (fryserogmaxplate(x)(y)(2))
-        iffrysernr = "IF(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]" & "," & fryserogmaxplate(x)(y)(0) & ","
+        'iffrysernr = "IF(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]" & "," & fryserogmaxplate(x)(y)(0) & ","
+        iffrysernr = "IF(AND(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]," & fryserogmaxplate(x)(y)(3) & "<=RC[" & -1 - (3 * x) & "])," & fryserogmaxplate(x)(y)(0) & ","
+        'AND(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]," & fryserogmaxplate(x)(y)(3) & "<=RC[" & -1 - (3 * x) & "]),"
+        
+        'iffrysernr = "IF(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]" & "," & fryserogmaxplate(x)(y)(0) & ","
+        
         ' + (3*" & x & ")
         'MsgBox (iffrysernr)
         'MsgBox (samletfrysernr)
@@ -1219,8 +1224,9 @@ For x = LBound(fryserogmaxplate) To UBound(fryserogmaxplate)
         'MsgBox (samletfrysernr)
         sluttest = sluttest & ")"
         
-        
-        iffryserpos = "IF(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -2 - (3 * x) & "]" & ",""" & fryserogmaxplate(x)(y)(1) & ""","
+        iffryserpos = "IF(AND(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -2 - (3 * x) & "]," & fryserogmaxplate(x)(y)(3) & "<=RC[" & -2 - (3 * x) & "]),""" & fryserogmaxplate(x)(y)(1) & ""","
+
+'        iffryserpos = "IF(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -2 - (3 * x) & "]" & ",""" & fryserogmaxplate(x)(y)(1) & ""","
         samletfryserpos = (samletfryserpos & iffryserpos)
 'ifsætning = "IF(RC[-7]<" & sortedelevatorinfo(x)(0) & "," & sortedelevatorinfo(x)(1) & ","
 
