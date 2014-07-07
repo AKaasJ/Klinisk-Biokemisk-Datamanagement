@@ -310,7 +310,7 @@ Select Case Err.Number
 End Select
 
 End Function
-Function SimpelTest2(Plate As Integer, Path, i96)
+Function SimpelTest2(Path, i96)
 
 Dim MyFile As String 'Navn på fil (ændres senere)
 Dim i As Long
@@ -329,17 +329,7 @@ Dim pladeinfo(6)
 MyFile = Dir(Path & "*.xls?")
 
     
-    'DEBUG
-    ' Laver overskrifter i dokumentet (til informationen vi henter)
-        'With ThisWorkbook.ActiveSheet.Cells(1, 1)
-        '    .Value = "ID"
-        '    .Offset(0, 1).Value = "Well"
-        '    .Offset(0, 3).Value = "Filnavn + link til fil"
-        '    .Offset(0, 4).Value = "PlateID"
-        '    .Offset(0, 5).Value = "Isolationstid"
-        '    .Offset(0, 6).Value = "Instrument til isolation"
-        'End With
-    'DEBUG
+
 dirloop = -1
 'Looper igennem alle filer indtil alle er loopet igennem.
 EtLoop:
@@ -365,14 +355,10 @@ Do While MyFile <> ""
         End With
     Cellx = Cellx.Column
     Celly = Celly.Row
-    'MsgBox (Cellx & " : " & Celly)
-    ' Initialiserer konstanter til loops
-    'Cellx = 2
-    'Celly = 5 'koordinater på det første ID (A1)
+
     
-    Platesize = Plate
-    platerows = Platesize / 12
-    platecol = Platesize / 8
+    platerows = 96 / 12
+    platecol = 96 / 8
     
     y = 1
     x = 1
@@ -401,33 +387,6 @@ Do While MyFile <> ""
                
                i = i + 1
                
-               
-               'Skriver data ind i det excel ark som der søges fra
-'               With ThisWorkbook.ActiveSheet.Cells(i, 1) ' redigeret
-'                   .Value = Cells(Celly, Cellx).Value ' redigeret
-'                   .Offset(0, 1).Value = Chr(64 + y) ' Finder x position på ID i plate (Well)
-'                   .Offset(0, 2).Value = x ' Finder y position på ID i plate (Well)
-'                   .Interior.ColorIndex = Cells(Celly, Cellx).Interior.ColorIndex
-                   'Skriver filnavn ind og laver et hyperlink til det.
-'                   .Hyperlinks.Add Anchor:=.Offset(0, 3), _
-'                        Address:=Path + MyFile, _
-'                        TextToDisplay:=MyFile
-                
-'                   .Offset(0, 4).Value = Cells(22, 3).Value ' PlateID
-'                   .Offset(0, 5).Value = Cells(24, 3).Value ' Isolationstid
-'                   .Offset(0, 6).Value = Cells(24, 9).Value ' Instrument
-                   
-'                   ' Fitter kolonner
-'                   .Columns.AutoFit
-'                   .Offset(0, 1).Columns.AutoFit
-'                   .Offset(0, 3).Columns.AutoFit
-'                   .Offset(0, 4).Columns.AutoFit
-'                   .Offset(0, 5).Columns.AutoFit
-'               End With
-               
-            ' Incrementer inden loop køres igen
-               
-
             Cellx = Cellx + 1
             x = x + 1
             
@@ -909,10 +868,10 @@ Case "Koncentrationer"
 
     'Genererer Array med stier der skal loopes igennem
     DeFilerDerTestes = Konc
-    stiarray = stierfunction(DeFilerDerTestes, KolonneDerTestes)
+    Stiarray = stierfunction(DeFilerDerTestes, KolonneDerTestes)
 
     'tester om arrayet er tomt:
-    If Len(Join(stiarray, "")) = 0 Then
+    If Len(Join(Stiarray, "")) = 0 Then
         
     'Hvis array er tomt:
         MsgBox ("der er ikke noget data om denne population")
@@ -925,9 +884,9 @@ Case "Koncentrationer"
     'Hvis array ikke er tomt, kører koden:
 
     
-        For x = LBound(stiarray) To UBound(stiarray) ' konc
+        For x = LBound(Stiarray) To UBound(Stiarray) ' konc
     
-            Count = koncentration2(stiarray(x), i96) ' virker når i = i96, ved ikke hvad der itererer i96
+            Count = koncentration2(Stiarray(x), i96) ' virker når i = i96, ved ikke hvad der itererer i96
             
         Next x
         
@@ -940,10 +899,10 @@ Case "96 plader"
 'dim rækkearray()
     'Genererer Array med stier der skal loopes igennem
     DeFilerDerTestes = 96
-    stiarray = stierfunction(DeFilerDerTestes, KolonneDerTestes)
+    Stiarray = stierfunction(DeFilerDerTestes, KolonneDerTestes)
     
     'tester om arrayet er tomt:
-    If Len(Join(stiarray, "")) = 0 Then
+    If Len(Join(Stiarray, "")) = 0 Then
         
     'Hvis array er tomt:
         MsgBox ("der er ikke noget data om denne population")
@@ -958,39 +917,66 @@ Case "96 plader"
     Dim wellrows()
     Dim wellcols()
     
+    overskrifter = Array("ID", "Well", "Well", "Fil", "PlateID", "Isolationstid", "Instrument", "Elevatornr")
+    Range(Cells(1, 1), Cells(1, 8)).Value = overskrifter
+    
+    
+    
+        'finder sidste rækker i dokumentet
+        lastrowofpath = ActiveSheet.UsedRange.Rows.Count
+        firstrowofpath = lastrow + 1
+        lastrow = (ActiveSheet.UsedRange.Rows.Count)
+        firstrow = lastrow + 1
+        
+    
         'TEST
-        For x = LBound(stiarray) To UBound(stiarray) 'looper igennem stier
-            plates = SimpelTest2(96, stiarray(x), i96)
+        For x = LBound(Stiarray) To UBound(Stiarray) 'looper igennem stier
+            
+            plates = SimpelTest2(Stiarray(x), i96)
 
             For n = LBound(plates) To UBound(plates) 'looper igennem filer i den sti
-            
+            i = firstrowofpath - 2
                 For i = LBound(plates(n)(0)) To UBound(plates(n)(0)) 'looper igennem værdier hentet fra hver fil
                     ReDim Preserve ID(y)
                     ReDim Preserve wellrows(y)
                     ReDim Preserve wellcols(y)
                 
                 
-                ID(y) = plates(n)(0)(i)
-                wellrows(y) = plates(n)(1)(i)
-                wellcols(y) = plates(n)(2)(i)
-                
-                y = y + 1
+                    ID(y) = plates(n)(0)(i)
+                    wellrows(y) = plates(n)(1)(i)
+                    wellcols(y) = plates(n)(2)(i)
+                    
+                    y = y + 1
                 Next i
-            
-            'indsætter den mere statiske information om 96 pladerne i loops
-            For col = 0 To 3
-                thisRange = Chr(68 + col) & 96 * n + 2 & ":" & Chr(68 + col) & 96 * (n + 1) + 1
-                Range(thisRange).Value = plates(n)(3 + col)
-            Next col
-            
-            
-            
+                firstrow = lastrow + 1
+                lastrow = (ActiveSheet.UsedRange.Rows.Count) + 96
+                'indsætter den mere statiske information om 96 pladerne i loops /wells
+                For col = 0 To 3
+                    'thisRange = Chr(68 + col) & 96 * n + 2 & ":" & Chr(68 + col) & 96 * (n + 1) + 1
+                    thisRange = Chr(68 + col) & firstrow & ":" & Chr(68 + col) & lastrow
+                    Range(thisRange).Value = plates(n)(3 + col)
+                Next col
+                'MsgBox (96 * (n + 1) + 1) 'lastrow -1
+               ' MsgBox (96 * n + 2) 'firstrowofpath
+                
+                
             Next n
-       
+            'firstrowofpath = lastrow + 1
+            'finder sidste rækker i dokumentet
+            'lastrow = ActiveSheet.UsedRange.Rows.Count
+            firstrowofpath = lastrowofpath + 1
+            lastrowofpath = ActiveSheet.UsedRange.Rows.Count
+            
+            With Range("D" & firstrowofpath, "D" & lastrowofpath) 'test
+                .Hyperlinks.Add Anchor:=.Offset(0, 0), Address:=Stiarray(x) + "\" 'test
+            End With 'test
+        
+            
+            
         Next x
 
         'sætter range = ID
-        Range("A1", "A192").Resize(1, UBound(ID) + 1) = ID
+        Range("A1", "A" & lastrow).Resize(1, UBound(ID) + 1) = ID
         
         'finder den range som værdier er pastet ind i.
         Set targetWorksheet = Worksheets("BioPac96")
@@ -1076,34 +1062,26 @@ Case "96 plader"
         
         
         'finder sidste rækker i dokumentet
-        lastrow = ActiveSheet.UsedRange.Rows.Count
-        'DEBUG
-        
-        
-        'Løber alle celler igennem, hvis Sortedelevatorinfo(x)(1) er mindre end ID så indtastes info
-        'For x = LBound(Sortedelevatorinfo) To UBound(Sortedelevatorinfo)
-        'hvis Sortedelevatorinfo er mindre end Cells(2+i,1) så
-        'indtast info + exit for
-        
-        
-        'i = 0
-        'Do Until 2 + i = lastrow + 1
+        'lastrow = ActiveSheet.UsedRange.Rows.Count
 
-        
-            x = 0
+        x = 0
 
             
         
-            samletsætning = "="
-            slutparantes = ""
+        samletsætning = "="
+        slutparantes = ""
+            
             'Cells(2, 8).Value2 = samletsætning
-            For x = LBound(sortedelevatorinfo) To UBound(sortedelevatorinfo) - 1
+            
+        For x = LBound(sortedelevatorinfo) To UBound(sortedelevatorinfo) - 1
+                
                 'MsgBox (sortedelevatorinfo(65)(0))
-                ifsætning = "IF(RC[-7]<" & sortedelevatorinfo(x)(0) & "," & sortedelevatorinfo(x)(1) & ","
+                
+            ifsætning = "IF(RC[-7]<" & sortedelevatorinfo(x)(0) & "," & sortedelevatorinfo(x)(1) & ","
 
-                samletsætning = (samletsætning & ifsætning)
+            samletsætning = (samletsætning & ifsætning)
 
-                slutparantes = slutparantes & ")"
+            slutparantes = slutparantes & ")"
                 'MsgBox (samletsætning & """ID værdi findes ikke i elevatorfiler""" & slutparantes)
                     'Range("H2:H193").Value2 = samletsætning & """ID værdi findes ikke i elevatorfiler""" & slutparantes
             'max x er 66 ?65 (funktionen burde loope 66 gange (indsætte 66 paranteser)
@@ -1111,195 +1089,62 @@ Case "96 plader"
             'Ubound(sortedelevatorinfo er 65)
             
             
-            Next x
-        'tal = "12345"
-'        MsgBox (x)
-        'ifsætning = "IF(RC[-7]<" & sortedelevatorinfo(0)(0) & "," & sortedelevatorinfo(0)(1) & ","
-        'samletsætning = (samletsætning & ifsætning)
-        ' ifsætning = "IF(RC[-7]<" & sortedelevatorinfo(1)(0) & "," & sortedelevatorinfo(1)(1) & ","
-        'samletsætning = (samletsætning & ifsætning)
-            'slutparantes = Left(slutparantes, Len(slutparantes) - 1)
-        'slutparantes = "))"
+        Next x
+
+        'samletsætning er det fulde if-statement
         samletsætning = samletsætning & """ID værdi findes ikke i elevatorfiler""" & slutparantes
-        'MsgBox (samletsætning)
-        'MsgBox (Len(samletsætning))
-        'teststring = "test"
-        
+
+        'indsætter elevatornr if statement (samletsætning)
         Range("H2:H" & lastrow).Value2 = samletsætning
-        'i = i + 1
-        'Loop
-        
-        'Cells(2, 10).value = fryserogmaxplate(0)(0)(2)
-        
-        'nu når alle elevator ID er på plads kan man loope igennem fryserinfo og se for hver celle om værdien er mindre etc.
-'TEST SCRIPT
-'        samletsætning = "="
-'        slutparantes = ""
-'        MsgBox (UBound(fryserogmaxplate(0)(0)))
-'        For x = LBound(fryserogmaxplate) To UBound(fryserogmaxplate)
-        
-                ' for hvert "indhold":
-                ' skal der i hver række indsættes et if statement
-                ' Hvis ifsætning = "IF(RC[-1+(3*x)]<" & sortedelevatorinfo(x)(0)
-                ' "IF(AND(RC[-1+(3*x)]> & fryserogmaxplate(x)(y)(2) & ",<" &
-                
-                'hvis elevatornr er mindre < fryserogmaxplate(x)(y=elevatornr)(2)
-                
-                
-                
-                'skal være hvis værdien i kolonne H<...
-'                ifsætning = "IF(RC[-1]<" & fryserogmaxplate(x)(0) & "," & fryserogmaxplate(x)(1) & ","
 
-'                samletsætning = (samletsætning & ifsætning)
 
-'                slutparantes = slutparantes & ")"
-        
-'        Next x
-'END TESTSCRIPT
-'ORIGINAL SCRIPT
-                'While Well ikke er tom (fordi ID godt kan være tom)
-        
-'        i = 0
-'        Do Until 2 + i = lastrow + 1
 
+        For x = LBound(fryserogmaxplate) To UBound(fryserogmaxplate)
         
-'            x = 0
-
+        
+        
+            samletfryserpos = "="
+            samletfrysernr = "="
+            sluttest = ""
+        
+            For y = LBound(fryserogmaxplate(x)) To UBound(fryserogmaxplate(x))
+                
+                'iffrysernr laver if-statement der bestemmer hvilket frysernr tilhører hvilkene elevator.
+                iffrysernr = "IF(AND(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]," & fryserogmaxplate(x)(y)(3) & "<=RC[" & -1 - (3 * x) & "])," & fryserogmaxplate(x)(y)(0) & ","
+                
+                samletfrysernr = (samletfrysernr & iffrysernr)
+                
+                sluttest = sluttest & ")"
+                
+                'iffryserpos laver if-statement der bestemmer hvilken fryserposition tilhører hvilkene elevator.
+                iffryserpos = "IF(AND(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -2 - (3 * x) & "]," & fryserogmaxplate(x)(y)(3) & "<=RC[" & -2 - (3 * x) & "]),""" & fryserogmaxplate(x)(y)(1) & ""","
+        
+                samletfryserpos = (samletfryserpos & iffryserpos)
+        
             
+            Next y
+            'tilføj sidste række til if sætning
+            samletfrysernr = samletfrysernr & """elevatorID findes ikke i fryseroversigt""" & sluttest
+            samletfryserpos = samletfryserpos & """elevatorID findes ikke i fryseroversigt""" & sluttest
         
-
-'            For x = LBound(sortedelevatorinfo) To UBound(sortedelevatorinfo)
-            'Cells(2 + i, 2).Select
-'                If sortedelevatorinfo(x)(0) > Cells(2 + i, 1).Value Then
-                
-'                    Cells(2 + i, 8).Value = sortedelevatorinfo(x)(1)
-'                Exit For
-                'Else
-                
-'                End If
-
-                        'Cells(2 + i, 9 + (x * 3)).Value = "Indhold"
-'            Next x
+            'indsætter tekst i alle rækker / kolonner (for alt "indhold")
+            Range(Cells(2, 9 + (3 * x)), Cells(lastrow, 9 + (3 * x))).Value2 = samletfrysernr
+            Range(Cells(2, 10 + (3 * x)), Cells(lastrow, 10 + (3 * x))).Value2 = samletfryserpos
+            Range(Cells(2, 11 + (3 * x)), Cells(lastrow, 11 + (3 * x))).Value2 = indhold(x)
+        
             
+        Next x
         
-'        i = i + 1
-'        Loop
+        overskrifter = Array("ID", "Well", "Well", "Fil", "PlateID", "Isolationstid", "Instrument", "Elevatornr")
+        Range(Cells(1, 1), Cells(1, 8)).Value = overskrifter
 
-'TEST
-'MsgBox (UBound(fryserogmaxplate))
-'MsgBox (UBound(fryserogmaxplate(0))) '0 (1 element)
-'MsgBox (fryserogmaxplate(0)(0)(0)) '2
-
-'MsgBox (fryserogmaxplate(0)(0)(2)) '11
-
-
-For x = LBound(fryserogmaxplate) To UBound(fryserogmaxplate)
-'For x = 2 To 2
-
-    'iffrysernr = ""
-    samletfryserpos = "="
-    samletfrysernr = "="
-    sluttest = ""
-
-    For y = LBound(fryserogmaxplate(x)) To UBound(fryserogmaxplate(x))
-        
-        'lav et array med frysernr
-        
-        'fryserogmaxplate(x)(y)(0)
-'Hvis fryserogmaxplate(x)(y)(2) < RC[-8 + (3*x)] så skal der stå: fryserogmaxplate(x)(y)(0) ellers hvis...
-
-'ellers skal der stå "elevatorID findes ikke i fryseroversigt"
-        'MsgBox (indhold(x))
-        'MsgBox (fryserogmaxplate(x)(y)(2))
-        'iffrysernr = "IF(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]" & "," & fryserogmaxplate(x)(y)(0) & ","
-        iffrysernr = "IF(AND(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]," & fryserogmaxplate(x)(y)(3) & "<=RC[" & -1 - (3 * x) & "])," & fryserogmaxplate(x)(y)(0) & ","
-        'AND(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]," & fryserogmaxplate(x)(y)(3) & "<=RC[" & -1 - (3 * x) & "]),"
-        
-        'iffrysernr = "IF(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -1 - (3 * x) & "]" & "," & fryserogmaxplate(x)(y)(0) & ","
-        
-        ' + (3*" & x & ")
-        'MsgBox (iffrysernr)
-        'MsgBox (samletfrysernr)
-        samletfrysernr = (samletfrysernr & iffrysernr)
-        'MsgBox (samletfrysernr)
-        sluttest = sluttest & ")"
-        
-        iffryserpos = "IF(AND(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -2 - (3 * x) & "]," & fryserogmaxplate(x)(y)(3) & "<=RC[" & -2 - (3 * x) & "]),""" & fryserogmaxplate(x)(y)(1) & ""","
-
-'        iffryserpos = "IF(" & fryserogmaxplate(x)(y)(2) & ">=RC[" & -2 - (3 * x) & "]" & ",""" & fryserogmaxplate(x)(y)(1) & ""","
-        samletfryserpos = (samletfryserpos & iffryserpos)
-'ifsætning = "IF(RC[-7]<" & sortedelevatorinfo(x)(0) & "," & sortedelevatorinfo(x)(1) & ","
-
-'samletsætning = (samletsætning & ifsætning)
-
-'slutparantes = slutparantes & ")"
-        
-        
-        
-        'lav et array med fryserpos
-        'indsæt og transporner
-    
-    Next y
-    'tilføj sidste række til if sætning
-    samletfrysernr = samletfrysernr & """elevatorID findes ikke i fryseroversigt""" & sluttest
-    samletfryserpos = samletfryserpos & """elevatorID findes ikke i fryseroversigt""" & sluttest
-    'MsgBox (samletfrysernr)
-    'indsæt
-    'Range("I2:I193").Value2 = samletfrysernr
-    'MsgBox (samletfryserpos)
-    Range(Cells(2, 9 + (3 * x)), Cells(lastrow, 9 + (3 * x))).Value2 = samletfrysernr
-    Range(Cells(2, 10 + (3 * x)), Cells(lastrow, 10 + (3 * x))).Value2 = samletfryserpos
-    Range(Cells(2, 11 + (3 * x)), Cells(lastrow, 11 + (3 * x))).Value2 = indhold(x)
-    
-    'MsgBox (samletfrysnr)
-    'MsgBox (fryserogmaxplate(x)(y)(0))
-    'MsgBox (y)
-    'MsgBox (x)
-    
-Next x
-
-'END TEST
-
-
-
-'INDSÆTTER "Indhold + fryserpos + frysnr"
-'For x = LBound(fryserogmaxplate) To UBound(fryserogmaxplate)
-'        i = 0
-'            Do Until 2 + i = lastrow + 1
-'                y = 0
-            
-                    ' så længe plateID er større end arraytest(y)(0) så gør y større
-'                        Do While Cells(2 + i, 8).Value > fryserogmaxplate(x)(y)(2) And y < UBound(fryserogmaxplate(x)) ' fejl ved plateid(max)
-                    
-'                        y = y + 1
-    
-'                        Loop 'hopper ud af loop når intplates er større end Cells(2+i,2)
-                        
-                        '"=IF(AND(RC[-4]>R[-1]C[-4],RC[-4]<R[1]C[-4]),""mellem 3 og 5"",""ikke mellem 3 og 5"")"
-
-'                        If Cells(2 + i, 8).Value < fryserogmaxplate(x)(y)(2) And Cells(2 + i, 8).Value >= fryserogmaxplate(x)(y)(3) Then
-                        'indsætter information om frysere når plateID er mindre end intplates(x)(y)(2)
-                            
-'                                Cells(2 + i, 9 + (x * 3)).Value = fryserogmaxplate(x)(y)(0)
-'                                Cells(2 + i, 10 + (x * 3)).Value = fryserogmaxplate(x)(y)(1)
-'                                Cells(2 + i, 11 + (x * 3)).Value = indhold(x)
-                            
-'                            i = i + 1
-'                        Else
-'                            i = i + 1
-'                        End If
-                
-                
-'            Loop
-'       Next x
-'END ORIGINAL SCRIPT
-Cells(1, 1).Value = "ID"
-Cells(1, 2).Value = "Well"
-Cells(1, 4).Value = "Fil"
-Cells(1, 5).Value = "PlateID"
-Cells(1, 6).Value = "Isolationstid"
-Cells(1, 7).Value = "Instrument"
-Cells(1, 8).Value = "Elevatornr"
+'        Cells(1, 1).Value = "ID"
+'        Cells(1, 2).Value = "Well"
+'        Cells(1, 4).Value = "Fil"
+'        Cells(1, 5).Value = "PlateID"
+'        Cells(1, 6).Value = "Isolationstid"
+'        Cells(1, 7).Value = "Instrument"
+'        Cells(1, 8).Value = "Elevatornr"
         
     End If
  
@@ -1309,10 +1154,10 @@ Cells(1, 8).Value = "Elevatornr"
 Case "384 plader"
 
     DeFilerDerTestes = 384
-    stiarray = stierfunction(DeFilerDerTestes, KolonneDerTestes)
+    Stiarray = stierfunction(DeFilerDerTestes, KolonneDerTestes)
     
     'tester om arrayet er tomt:
-    If Len(Join(stiarray, "")) = 0 Then
+    If Len(Join(Stiarray, "")) = 0 Then
         
     'Hvis array er tomt:
         MsgBox ("der er ikke noget data om denne population")
@@ -1324,11 +1169,11 @@ Case "384 plader"
     Else
     'Hvis array ikke er tomt, kører koden:
 
-        MsgBox (UBound(stiarray))
+        MsgBox (UBound(Stiarray))
         'henter stier og skriver data ind i excel fil
-        For x = LBound(stiarray) To UBound(stiarray) '96 plate
+        For x = LBound(Stiarray) To UBound(Stiarray) '96 plate
         
-            Count = læs384(stiarray(x), i96)       'Looper igennem excelfiler i mappen, skriver data i excel
+            Count = læs384(Stiarray(x), i96)       'Looper igennem excelfiler i mappen, skriver data i excel
             i96 = Count 'bestemmer hvor i excelarket data inputtes. (hvor langt nede)
         
         Next x
